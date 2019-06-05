@@ -1,0 +1,40 @@
+- hosts: nginx
+  tasks:
+  - name: 拷贝nginx源码包
+    copy: src=/etc/ansible/templates/nginx/nginx-1.16.0.tar.gz dest=/usr/local/src/nginx-1.16.0.tar.gz owner=root group=root mode='0644' backup=yes
+- hosts: nginx
+  tasks:
+  - name: 拷贝 install.sh
+    copy: src=/etc/ansible/templates/nginx/nginxinstall.sh dest=/root/installnginx.sh owner=root group=root mode='0744'
+- hosts: nginx
+  tasks:
+  - name: 安装 install zlib、pcre、openssl 等软件包
+    yum: name={{item.name}} state=installed
+    with_items:
+      - name: gcc
+      - name: zlib
+      - name: zlib-devel
+      - name: pcre
+      - name: pcre-devel
+      - name: openssl
+      - name: openssl-devel
+- hosts: nginx
+  tasks:
+  - name: 执行安装脚本
+    shell: /bin/bash /root/installnginx.sh
+- hosts: nginx
+  tasks:
+  - name: 穿件站点目录
+    file: path=/data/web-data/news.com state=directory mode='0755' owner=nginx group=nginx
+- hosts: nginx
+  tasks:
+  - name: 拷贝 nginx.conf
+    copy: src=/etc/ansible/templates/nginx/nginx.conf dest=/usr/local/nginx/conf owner=root group=root mode='0644'
+- hosts: nginx
+  tasks:
+  - name: 拷贝 index.html 
+    copy: src=/etc/ansible/templates/nginx/index.html dest=/data/web-data/news.com/ owner=nginx group=nginx mode='0644'
+- hosts: nginx
+  tasks:
+  - name: 启动 nginx
+    shell: /usr/local/nginx/sbin/nginx 
